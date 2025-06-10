@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cable TV Recharge</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: sans-serif; max-width: 400px; margin: 2rem auto; }
+    input, select, button { width: 100%; padding: .5rem; margin-top: .5rem; }
+    button { background: #ff6600; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Cable TV Recharge</h1>
+  <label for="last5">Last 5 digits of Smartcard</label>
+  <input id="last5" type="text" placeholder="e.g. 755E8" maxlength="5">
+
+  <label for="package">Select Package</label>
+  <select id="package">
+    <option value="">-- choose --</option>
+    <option value="YASH SILVER PACK|300">YASH SILVER PACK — ₹300</option>
+    <option value="YASH GOLD PACK|350">YASH GOLD PACK — ₹350</option>
+    <option value="YASH GOLD PLUS PACK|400">YASH GOLD PLUS PACK — ₹400</option>
+    <option value="YASH PREMIUM HD|450">YASH PREMIUM HD — ₹450</option>
+  </select>
+
+  <button id="payBtn">Pay & Recharge</button>
+
+  <script>
+    document.getElementById('payBtn').addEventListener('click', async () => {
+      const last5 = document.getElementById('last5').value.trim().toUpperCase();
+      const pkg   = document.getElementById('package').value;
+      if (!last5 || !pkg) return alert('Enter last 5 digits and select a package.');
+
+      const [packageName, amount] = pkg.split('|');
+      try {
+        const resp = await fetch('https://cablerecharge.onrender.com/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ last5, packageName, amount })
+        });
+        if (!resp.ok) throw await resp.text();
+        const { payment_url } = await resp.json();
+        window.location.href = payment_url;
+      } catch (e) {
+        alert('Error creating payment: ' + e);
+      }
+    });
+  </script>
+</body>
+</html>
