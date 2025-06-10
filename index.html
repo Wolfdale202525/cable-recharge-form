@@ -1,51 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Cable TV Recharge</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cable Recharge Form</title>
   <style>
-    body { font-family: sans-serif; max-width: 400px; margin: 2rem auto; }
-    input, select, button { width: 100%; padding: .5rem; margin-top: .5rem; }
-    button { background: #ff6600; color: white; border: none; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      text-align: center;
+      padding: 50px;
+    }
+    form {
+      background: white;
+      padding: 30px;
+      max-width: 400px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    button {
+      background-color: orange;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: darkorange;
+    }
   </style>
 </head>
 <body>
-  <h1>Cable TV Recharge</h1>
-  <label for="last5">Last 5 digits of Smartcard</label>
-  <input id="last5" type="text" placeholder="e.g. 755E8" maxlength="5">
 
-  <label for="package">Select Package</label>
-  <select id="package">
-    <option value="">-- choose --</option>
-    <option value="YASH SILVER PACK|300">YASH SILVER PACK — ₹300</option>
-    <option value="YASH GOLD PACK|350">YASH GOLD PACK — ₹350</option>
-    <option value="YASH GOLD PLUS PACK|400">YASH GOLD PLUS PACK — ₹400</option>
-    <option value="YASH PREMIUM HD|450">YASH PREMIUM HD — ₹450</option>
-  </select>
+  <form id="recharge-form">
+    <h2>Cable Recharge</h2>
 
-  <button id="payBtn">Pay & Recharge</button>
+    <input type="text" id="smartcard" placeholder="Enter last 5 digits of Smartcard Number" required />
+
+    <select id="package" required>
+      <option value="">Select Package</option>
+      <option value="GOLD">GOLD</option>
+      <option value="SILVER">SILVER</option>
+      <option value="BRONZE">BRONZE</option>
+      <option value="PLATINUM">PLATINUM</option>
+    </select>
+
+    <button type="submit">Recharge</button>
+  </form>
 
   <script>
-    document.getElementById('payBtn').addEventListener('click', async () => {
-      const last5 = document.getElementById('last5').value.trim().toUpperCase();
-      const pkg   = document.getElementById('package').value;
-      if (!last5 || !pkg) return alert('Enter last 5 digits and select a package.');
+    document.getElementById('recharge-form').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-      const [packageName, amount] = pkg.split('|');
-      try {
-        const resp = await fetch('https://cablerecharge.onrender.com/create-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ last5, packageName, amount })
-        });
-        if (!resp.ok) throw await resp.text();
-        const { payment_url } = await resp.json();
-        window.location.href = payment_url;
-      } catch (e) {
-        alert('Error creating payment: ' + e);
+      const smartcard = document.getElementById('smartcard').value.trim();
+      const package = document.getElementById('package').value;
+
+      if (!smartcard || !package) {
+        alert("Please fill all fields.");
+        return;
       }
+
+      fetch("https://cablerecharge.onrender.com/create-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          smartcard: smartcard,
+          package: package
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Recharge successful! ✅");
+          window.location.href = "/thank-you.html";
+        } else {
+          alert("❌ " + (data.message || data.error || "Recharge failed."));
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        alert("Something went wrong.");
+      });
     });
   </script>
+
 </body>
 </html>
